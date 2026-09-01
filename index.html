@@ -333,6 +333,7 @@
   .ack-btn:active{transform:scale(0.94);}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -459,11 +460,15 @@
     <button class="add-service-btn" id="exportBtn" style="margin-top:12px;">Export semua riwayat ke Excel (.csv)</button>
   </section>
 
-  <p class="note">Data transaksi tersimpan otomatis di perangkat ini setiap kali kamu klik simpan.<br>Klik tombol simpan akan sekaligus membuka WhatsApp dengan nota otomatis terisi.</p>
+  <p class="note">Data transaksi tersimpan online (Supabase) dan bisa diakses dari HP mana pun.<br>Klik tombol simpan akan sekaligus membuka WhatsApp dengan nota otomatis terisi.</p>
 
 </main>
 
 <script>
+const SUPABASE_URL = "https://satpinndnnmhpvdbozpa.supabase.co";
+const SUPABASE_KEY = "sb_publishable_tuaKnJHQjveQnE2FJGuA0Q_QZ32uqLT";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 let services = [
   {id:1, name:"Cukur saja", price:15000},
   {id:2, name:"Cukur + keramas", price:20000},
@@ -568,7 +573,6 @@ let transactions = [];
 let paymentSettings = { bankInfo:"", ewalletInfo:"", qrisImage:"" };
 let shopSettings = { address:"", phone:"" };
 
-const STORAGE_KEY_TX = "barbershop_transactions";
 const STORAGE_KEY_PAY = "barbershop_payment_settings";
 const STORAGE_KEY_SHOP = "barbershop_shop_settings";
 
@@ -594,17 +598,28 @@ document.getElementById("shopPhone").addEventListener("input", e=>{
   saveShopSettings();
 });
 
-function loadTransactions(){
+async function loadTransactions(){
   try{
-    const raw = localStorage.getItem(STORAGE_KEY_TX);
-    transactions = raw ? JSON.parse(raw) : [];
+    const { data, error } = await sb.from('transaksi').select('*').order('tanggal', { ascending: true });
+    if(error) throw error;
+    transactions = (data || []).map(row=>{
+      let extra = { items: [], phone: "" };
+      try{ extra = JSON.parse(row.items); }catch(e){ /* keep default */ }
+      return {
+        id: row.id,
+        date: row.tanggal,
+        customer: row.customer,
+        phone: extra.phone || "",
+        items: extra.items || [],
+        total: row.total,
+        payment: row.payment,
+        status: row.status
+      };
+    });
   }catch(e){
+    console.error("Gagal memuat data dari Supabase:", e);
     transactions = [];
   }
-}
-
-function saveTransactions(){
-  localStorage.setItem(STORAGE_KEY_TX, JSON.stringify(transactions));
 }
 
 function loadPaymentSettings(){
@@ -731,19 +746,30 @@ function renderHistory(){
   }).join("");
 
   listEl.querySelectorAll("button[data-ack]").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
+    btn.addEventListener("click", async ()=>{
       const id = btn.dataset.ack;
-      const tx = transactions.find(t=>t.id===id);
-      if(tx){ tx.status = "Lunas"; saveTransactions(); renderHistory(); }
+      try{
+        const { error } = await sb.from('transaksi').update({status:"Lunas"}).eq('id', id);
+        if(error) throw error;
+        await loadTransactions();
+        renderHistory();
+      }catch(e){
+        alert("Gagal update status, coba lagi. (" + e.message + ")");
+      }
     });
   });
 
   listEl.querySelectorAll("button[data-tid]").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
+    btn.addEventListener("click", async ()=>{
       const id = btn.dataset.tid;
-      transactions = transactions.filter(t=>t.id!==id);
-      saveTransactions();
-      renderHistory();
+      try{
+        const { error } = await sb.from('transaksi').delete().eq('id', id);
+        if(error) throw error;
+        await loadTransactions();
+        renderHistory();
+      }catch(e){
+        alert("Gagal menghapus transaksi, coba lagi. (" + e.message + ")");
+      }
     });
   });
 }
@@ -818,7 +844,9 @@ function exportToExcel(){
 
 document.getElementById("exportBtn").addEventListener("click", exportToExcel);
 
-document.getElementById("sendBtn").addEventListener("click", ()=>{
+let lastWaUrl = null;
+
+document.getElementById("sendBtn").addEventListener("click", async ()=>{
   const nameEl = document.getElementById("custName");
   const phoneEl = document.getElementById("custPhone");
   const phoneErr = document.getElementById("phoneErr");
@@ -854,6 +882,7 @@ document.getElementById("sendBtn").addEventListener("click", ()=>{
   }
   const tanggal = txDateTime.toLocaleDateString("id-ID", {day:"numeric", month:"long", year:"numeric"});
   const jam = txDateTime.toLocaleTimeString("id-ID", {hour:"2-digit", minute:"2-digit"});
+  const statusValue = paidNow ? "Lunas" : "Menunggu bayar";
 
   let msg = `*B.CUTS BARBERSHOP*\n`;
   msg += `${tanggal}, ${jam}\n`;
@@ -878,42 +907,61 @@ document.getElementById("sendBtn").addEventListener("click", ()=>{
   msg += `\nTerima kasih banyak sudah berkunjung dan cukur di B.Cuts Barbershop, kak! 🙏\n`;
   msg += `Ganteng baru siap tampil lagi. Sampai jumpa di potongan berikutnya!`;
 
-  const record = {
-    id: String(Date.now()),
-    date: txDateTime.toISOString(),
+  const dbRow = {
     customer: name,
-    phone: normalized,
-    items: chosen.map(s=>({name:s.name, price:s.price})),
+    items: JSON.stringify({ items: chosen.map(s=>({name:s.name, price:s.price})), phone: normalized }),
     total: total,
     payment: paymentMethod,
-    status: paidNow ? "Lunas" : "Menunggu bayar"
+    status: statusValue,
+    tanggal: txDateTime.toISOString()
   };
-  const orderId = "BC" + txDateTime.toISOString().slice(2,10).replace(/-/g,"") + "-" + String(transactions.length+1).padStart(3,"0");
-  record.orderId = orderId;
+
+  const sendBtn = document.getElementById("sendBtn");
+  sendBtn.disabled = true;
 
   try{
-    transactions.push(record);
-    saveTransactions();
+    const { data, error } = await sb.from('transaksi').insert(dbRow).select().single();
+    if(error) throw error;
+
     saveErr.classList.remove("show");
+    await loadTransactions();
     renderHistory();
     document.getElementById("paidNow").checked = false;
     document.getElementById("txDate").value = new Date().toISOString().slice(0,10);
-    renderReceipt(record);
-  }catch(e){
-    saveErr.classList.add("show");
-  }
 
-  const url = `https://wa.me/${normalized}?text=${encodeURIComponent(msg)}`;
-  window.open(url, "_blank");
+    const orderId = "BC" + txDateTime.toISOString().slice(2,10).replace(/-/g,"") + "-" + String(transactions.length).padStart(3,"0");
+    renderReceipt({
+      orderId: orderId,
+      customer: name,
+      date: data.tanggal,
+      items: chosen.map(s=>({name:s.name, price:s.price})),
+      total: total,
+      payment: paymentMethod,
+      status: statusValue
+    });
+
+    const url = `https://wa.me/${normalized}?text=${encodeURIComponent(msg)}`;
+    lastWaUrl = url;
+    window.open(url, "_blank");
+  }catch(e){
+    console.error(e);
+    saveErr.classList.add("show");
+  }finally{
+    sendBtn.disabled = false;
+  }
 });
 
-function init(){
+document.getElementById("sendWaBtn").addEventListener("click", ()=>{
+  if(lastWaUrl) window.open(lastWaUrl, "_blank");
+});
+
+async function init(){
   renderServiceList();
   renderPickList();
   renderCart();
   loadPaymentSettings();
   loadShopSettings();
-  loadTransactions();
+  await loadTransactions();
   renderHistory();
   const todayIso = new Date().toISOString().slice(0,10);
   document.getElementById("txDate").value = todayIso;
