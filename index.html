@@ -32,7 +32,7 @@
     background-attachment:fixed;
     color:var(--ink);
     font-family:'Inter',sans-serif;
-    padding:0 0 60px;
+    padding:0 0 88px;
     min-height:100vh;
   }
   .pole{
@@ -331,6 +331,221 @@
   }
   .ack-btn:hover{background:var(--gold); color:#221a03;}
   .ack-btn:active{transform:scale(0.94);}
+
+  body{ padding-bottom:88px; }
+
+  .greet-card{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:linear-gradient(135deg, #221f1c 0%, #17150f 100%);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:18px 20px;
+    margin-bottom:16px;
+  }
+  .greet-hello{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:22px;
+    letter-spacing:0.5px;
+    color:var(--gold-deep);
+  }
+  .greet-date{
+    font-size:12px;
+    color:var(--muted);
+    margin-top:2px;
+  }
+  .greet-icon{
+    font-size:28px;
+  }
+
+  .stat-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:10px;
+    margin-bottom:16px;
+  }
+  .stat-card{
+    border-radius:10px;
+    padding:12px 10px;
+    border:1px solid var(--line);
+  }
+  .stat-gold{ background:linear-gradient(160deg, #2a2410 0%, #1a1712 100%); border-color:#4a3f1a; }
+  .stat-navy{ background:linear-gradient(160deg, #16202a 0%, #14171a 100%); border-color:#2c4258; }
+  .stat-red{ background:linear-gradient(160deg, #2a1414 0%, #1a1412 100%); border-color:#4a2323; }
+  .stat-label{
+    font-size:10px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:0.3px;
+    margin-bottom:6px;
+  }
+  .stat-value{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:19px;
+    color:var(--ink);
+    line-height:1;
+  }
+
+  .cta-btn{
+    width:100%;
+    padding:14px;
+    border:1px solid var(--gold-deep);
+    border-radius:8px;
+    background:linear-gradient(180deg, var(--gold-deep) 0%, var(--gold) 100%);
+    color:#221a03;
+    font-size:15px;
+    font-weight:700;
+    font-family:inherit;
+    cursor:pointer;
+    letter-spacing:0.3px;
+    transition:transform .12s ease, filter .2s ease;
+  }
+  .cta-btn:hover{filter:brightness(1.08);}
+  .cta-btn:active{transform:scale(0.97);}
+
+  .recent-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:9px 0;
+    border-bottom:1px solid var(--line-soft);
+    font-size:13px;
+  }
+  .recent-item:last-child{ border-bottom:none; }
+  .recent-name{ font-weight:600; }
+  .recent-sub{ font-size:11px; color:var(--muted); margin-top:1px; }
+
+  .bottom-nav{
+    position:fixed;
+    bottom:0; left:0; right:0;
+    display:flex;
+    justify-content:space-around;
+    align-items:flex-end;
+    background:linear-gradient(180deg, #17150f 0%, #0d0c0a 100%);
+    border-top:1px solid var(--line);
+    padding:8px 4px 10px;
+    z-index:50;
+  }
+  .nav-item{
+    background:none;
+    border:none;
+    color:var(--muted);
+    font-family:inherit;
+    font-size:10px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:3px;
+    cursor:pointer;
+    padding:4px 6px;
+    flex:1;
+    transition:color .2s ease;
+  }
+  .nav-item.active{ color:var(--gold-deep); }
+  .nav-item:active{ transform:scale(0.94); }
+  .nav-fab{ margin-top:-22px; }
+  .fab-circle{
+    width:46px; height:46px;
+    border-radius:50%;
+    background:linear-gradient(180deg, var(--gold-deep) 0%, var(--gold) 100%);
+    color:#221a03;
+    display:flex; align-items:center; justify-content:center;
+    font-size:26px;
+    font-weight:700;
+    line-height:1;
+    border:3px solid #0d0c0a;
+    box-shadow:0 2px 8px rgba(0,0,0,0.4);
+  }
+  .nav-fab span:last-child{ margin-top:1px; color:var(--gold-deep); }
+
+  .page{display:none;}
+  .page.active{display:block;}
+
+  .bottom-nav{
+    position:fixed;
+    bottom:0; left:0; right:0;
+    display:flex;
+    justify-content:space-around;
+    background:linear-gradient(180deg, #171614 0%, #0e0d0c 100%);
+    border-top:1px solid var(--line);
+    padding:8px 4px calc(8px + env(safe-area-inset-bottom));
+    z-index:50;
+  }
+  .nav-btn{
+    background:none;
+    border:none;
+    color:var(--muted);
+    font-family:inherit;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:2px;
+    font-size:10px;
+    padding:4px 10px;
+    border-radius:8px;
+    cursor:pointer;
+    transition:color .2s ease, transform .12s ease;
+  }
+  .nav-btn .nav-icon{font-size:19px; line-height:1;}
+  .nav-btn.active{color:var(--gold-deep);}
+  .nav-btn:active{transform:scale(0.92);}
+
+  .dash-hero{
+    border-radius:14px;
+    padding:20px;
+    margin-bottom:16px;
+    background:linear-gradient(135deg, #2a1607 0%, #1a0f05 60%, #0e0a06 100%);
+    border:1px solid var(--gold-deep);
+    position:relative;
+    overflow:hidden;
+  }
+  .dash-hero::after{
+    content:"";
+    position:absolute;
+    top:-30px; right:-30px;
+    width:130px; height:130px;
+    background:repeating-linear-gradient(45deg, var(--stripe-red) 0 10px, transparent 10px 20px);
+    opacity:.18;
+    border-radius:50%;
+  }
+  .dash-hero-label{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px;}
+  .dash-hero-value{font-family:'Bebas Neue',sans-serif; font-size:34px; color:var(--gold-deep); margin-top:4px;}
+  .dash-hero-sub{font-size:12px; color:var(--muted); margin-top:2px;}
+
+  .dash-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;}
+  .dash-stat{
+    background:linear-gradient(165deg, var(--card) 0%, var(--card-2) 100%);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:14px;
+  }
+  .dash-stat .label{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.3px;}
+  .dash-stat .value{font-family:'Bebas Neue',sans-serif; font-size:24px; margin-top:4px;}
+
+  .cat-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
+  .cat-card{
+    background:#161513;
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:12px 6px;
+    text-align:center;
+    cursor:pointer;
+    transition:transform .12s ease, border-color .2s ease;
+  }
+  .cat-card:active{transform:scale(0.94); border-color:var(--gold);}
+  .cat-card .cat-emoji{font-size:22px;}
+  .cat-card .cat-name{font-size:11px; margin-top:4px; color:var(--ink); line-height:1.3;}
+  .cat-card .cat-price{font-size:10px; color:var(--gold-deep); margin-top:2px;}
+
+  .recent-item{
+    display:flex;
+    justify-content:space-between;
+    padding:8px 0;
+    border-bottom:1px solid var(--line-soft);
+    font-size:13px;
+  }
+  .recent-item:last-child{border-bottom:none;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -344,23 +559,39 @@
 </header>
 
 <main>
+  <div class="view" id="view-dashboard">
+    <div class="greet-card">
+      <div class="greet-text">
+        <div class="greet-hello">Halo, Juragan 💈</div>
+        <div class="greet-date" id="greetDate"></div>
+      </div>
+      <div class="greet-icon">✂️</div>
+    </div>
 
-  <section>
-    <h2>Info toko <span class="edit-badge">bisa diedit</span></h2>
-    <p class="hint">Muncul sebagai kop di nota struk. Isi sekali saja.</p>
-    <label for="shopAddress">Alamat</label>
-    <input type="text" id="shopAddress" class="field" placeholder="Contoh: Jl. Melati No. 5, Mataram">
-    <label for="shopPhone">Nomor telepon/WA toko</label>
-    <input type="text" id="shopPhone" class="field" placeholder="Contoh: 081234567890">
-  </section>
+    <div class="stat-grid">
+      <div class="stat-card stat-gold">
+        <div class="stat-label">Transaksi hari ini</div>
+        <div class="stat-value" id="statTodayCount">0</div>
+      </div>
+      <div class="stat-card stat-navy">
+        <div class="stat-label">Pendapatan bulan ini</div>
+        <div class="stat-value" id="statMonthRevenue">Rp 0</div>
+      </div>
+      <div class="stat-card stat-red">
+        <div class="stat-label">Menunggu bayar</div>
+        <div class="stat-value" id="statPendingCount">0</div>
+      </div>
+    </div>
 
-  <section>
-    <h2>Daftar layanan <span class="edit-badge">bisa diedit</span></h2>
-    <p class="hint">Ini harga contoh awal. Ganti nama & harga sesuai barbershop kamu, atau tambah layanan baru.</p>
-    <div id="serviceList"></div>
-    <button class="add-service-btn" id="addServiceBtn">+ Tambah layanan baru</button>
-  </section>
+    <button class="cta-btn" id="dashNewTxBtn">+ Transaksi Baru</button>
 
+    <section style="margin-top:16px;">
+      <h2>Transaksi terbaru</h2>
+      <div id="recentList"><div class="cart-empty">Belum ada transaksi</div></div>
+    </section>
+  </div>
+
+  <div class="view" id="view-transaksi" style="display:none;">
   <section>
     <h2>Pilih layanan pelanggan</h2>
     <p class="hint">Klik satu atau beberapa layanan yang dipesan.</p>
@@ -376,22 +607,6 @@
     <div class="err" id="phoneErr">Nomor WhatsApp belum diisi atau formatnya salah.</div>
     <label for="txDate">Tanggal transaksi</label>
     <input type="date" id="txDate" class="field">
-  </section>
-
-  <section>
-    <h2>Metode pembayaran <span class="edit-badge">bisa diedit</span></h2>
-    <p class="hint">Isi info rekening/e-wallet sekali di sini, otomatis muncul di setiap nota. Untuk QRIS, upload gambar kode QRIS resmi dari bank/fintech kamu (bukan dibuat otomatis di sini).</p>
-    <label for="qrisUpload">Gambar QRIS (opsional)</label>
-    <input type="file" id="qrisUpload" accept="image/*" class="field">
-    <div class="err" id="qrisErr">Gagal upload gambar QRIS, coba foto lain yang lebih kecil.</div>
-    <div id="qrisPreviewWrap" style="display:none; margin-top:8px;">
-      <img id="qrisPreview" style="max-width:160px; border:1px solid var(--line); border-radius:8px; display:block;">
-      <button class="hist-del" id="qrisRemove" style="margin-top:6px;">Hapus gambar QRIS</button>
-    </div>
-    <label for="bankInfo">Info transfer bank</label>
-    <input type="text" id="bankInfo" class="field" placeholder="Contoh: BCA 1234567890 a.n. Budi">
-    <label for="ewalletInfo">Info e-wallet (OVO/DANA/GoPay dll)</label>
-    <input type="text" id="ewalletInfo" class="field" placeholder="Contoh: DANA 08123456789 a.n. Budi">
   </section>
 
   <section>
@@ -441,6 +656,9 @@
     <button class="send-btn" id="sendWaBtn" style="margin-top:10px;">Kirim nota ke WhatsApp</button>
   </section>
 
+  </div>
+
+  <div class="view" id="view-riwayat" style="display:none;">
   <section>
     <h2>Riwayat &amp; laporan bulanan</h2>
     <p class="hint">Semua transaksi yang disimpan otomatis masuk ke sini, dikelompokkan per bulan.</p>
@@ -462,7 +680,73 @@
 
   <p class="note">Data transaksi tersimpan online (Supabase) dan bisa diakses dari HP mana pun.<br>Klik tombol simpan akan sekaligus membuka WhatsApp dengan nota otomatis terisi.</p>
 
+
+  </div>
+
+  <div class="view" id="view-layanan" style="display:none;">
+  <section>
+    <h2>Daftar layanan <span class="edit-badge">bisa diedit</span></h2>
+    <p class="hint">Ini harga contoh awal. Ganti nama & harga sesuai barbershop kamu, atau tambah layanan baru.</p>
+    <div id="serviceList"></div>
+    <button class="add-service-btn" id="addServiceBtn">+ Tambah layanan baru</button>
+  </section>
+
+  </div>
+
+  <div class="view" id="view-pengaturan" style="display:none;">
+  <section>
+    <h2>Info toko <span class="edit-badge">bisa diedit</span></h2>
+    <p class="hint">Muncul sebagai kop di nota struk. Isi sekali saja.</p>
+    <label for="shopAddress">Alamat</label>
+    <input type="text" id="shopAddress" class="field" placeholder="Contoh: Jl. Melati No. 5, Mataram">
+    <label for="shopPhone">Nomor telepon/WA toko</label>
+    <input type="text" id="shopPhone" class="field" placeholder="Contoh: 081234567890">
+  </section>
+
+  <section>
+    <h2>Metode pembayaran <span class="edit-badge">bisa diedit</span></h2>
+    <p class="hint">Isi info rekening/e-wallet sekali di sini, otomatis muncul di setiap nota. Untuk QRIS, upload gambar kode QRIS resmi dari bank/fintech kamu (bukan dibuat otomatis di sini).</p>
+    <label for="qrisUpload">Gambar QRIS (opsional)</label>
+    <input type="file" id="qrisUpload" accept="image/*" class="field">
+    <div class="err" id="qrisErr">Gagal upload gambar QRIS, coba foto lain yang lebih kecil.</div>
+    <div id="qrisPreviewWrap" style="display:none; margin-top:8px;">
+      <img id="qrisPreview" style="max-width:160px; border:1px solid var(--line); border-radius:8px; display:block;">
+      <button class="hist-del" id="qrisRemove" style="margin-top:6px;">Hapus gambar QRIS</button>
+    </div>
+    <label for="bankInfo">Info transfer bank</label>
+    <input type="text" id="bankInfo" class="field" placeholder="Contoh: BCA 1234567890 a.n. Budi">
+    <label for="ewalletInfo">Info e-wallet (OVO/DANA/GoPay dll)</label>
+    <input type="text" id="ewalletInfo" class="field" placeholder="Contoh: DANA 08123456789 a.n. Budi">
+  </section>
+
+  </div>
+
+
 </main>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" data-view="dashboard">
+    <svg viewBox="0 0 24 24" width="20" height="20"><path d="M3 11l9-7 9 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>Dashboard</span>
+  </button>
+  <button class="nav-item" data-view="riwayat">
+    <svg viewBox="0 0 24 24" width="20" height="20"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 7v5l3 3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>Riwayat</span>
+  </button>
+  <button class="nav-item nav-fab" data-view="transaksi">
+    <span class="fab-circle">+</span>
+    <span>Baru</span>
+  </button>
+  <button class="nav-item" data-view="layanan">
+    <svg viewBox="0 0 24 24" width="20" height="20"><circle cx="6" cy="6" r="3" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="6" cy="18" r="3" stroke="currentColor" stroke-width="2" fill="none"/><path d="M8.5 7.5L19 18M19 6L8.5 16.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    <span>Layanan</span>
+  </button>
+  <button class="nav-item" data-view="pengaturan">
+    <svg viewBox="0 0 24 24" width="20" height="20"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" fill="none"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>Setelan</span>
+  </button>
+</nav>
+
 
 <script>
 const SUPABASE_URL = "https://satpinndnnmhpvdbozpa.supabase.co";
@@ -712,6 +996,7 @@ function populateMonthPicker(){
 }
 
 function renderHistory(){
+  renderDashboard();
   populateMonthPicker();
   const picker = document.getElementById("monthPicker");
   const key = picker.value;
@@ -772,6 +1057,62 @@ function renderHistory(){
       }
     });
   });
+}
+
+function switchView(viewName){
+  document.querySelectorAll(".view").forEach(v=>v.style.display = "none");
+  const target = document.getElementById("view-" + viewName);
+  if(target) target.style.display = "block";
+  document.querySelectorAll(".nav-item").forEach(btn=>{
+    btn.classList.toggle("active", btn.dataset.view === viewName);
+  });
+  window.scrollTo({top:0, behavior:"instant"});
+}
+
+document.querySelectorAll(".nav-item").forEach(btn=>{
+  btn.addEventListener("click", ()=> switchView(btn.dataset.view));
+});
+document.getElementById("dashNewTxBtn").addEventListener("click", ()=> switchView("transaksi"));
+
+function renderDashboard(){
+  const dateEl = document.getElementById("greetDate");
+  const today = new Date();
+  dateEl.textContent = today.toLocaleDateString("id-ID", {weekday:"long", day:"numeric", month:"long", year:"numeric"});
+
+  const todayKey = today.toISOString().slice(0,10);
+  const monthKeyNow = today.toISOString().slice(0,7);
+
+  const todayCount = transactions.filter(t=> t.date.slice(0,10) === todayKey).length;
+  const monthRevenue = transactions.filter(t=> t.date.slice(0,7) === monthKeyNow).reduce((sum,t)=>sum+t.total,0);
+  const pendingCount = transactions.filter(t=> t.status !== "Lunas").length;
+
+  document.getElementById("statTodayCount").textContent = todayCount;
+  document.getElementById("statMonthRevenue").textContent = formatRupiah(monthRevenue);
+  document.getElementById("statPendingCount").textContent = pendingCount;
+
+  const recentEl = document.getElementById("recentList");
+  const recent = [...transactions].sort((a,b)=> b.date.localeCompare(a.date)).slice(0,5);
+  if(recent.length===0){
+    recentEl.innerHTML = '<div class="cart-empty">Belum ada transaksi</div>';
+    return;
+  }
+  recentEl.innerHTML = recent.map(t=>{
+    const d = new Date(t.date);
+    const tgl = d.toLocaleDateString("id-ID", {day:"numeric", month:"short"});
+    const jam = d.toLocaleTimeString("id-ID", {hour:"2-digit", minute:"2-digit"});
+    const badge = t.status === "Lunas"
+      ? '<span class="status-badge status-lunas">Lunas</span>'
+      : '<span class="status-badge status-pending">Menunggu</span>';
+    return `
+      <div class="recent-item">
+        <div>
+          <div class="recent-name">${t.customer}${badge}</div>
+          <div class="recent-sub">${tgl}, ${jam}</div>
+        </div>
+        <div>${formatRupiah(t.total)}</div>
+      </div>
+    `;
+  }).join("");
 }
 
 document.getElementById("monthPicker").addEventListener("change", renderHistory);
