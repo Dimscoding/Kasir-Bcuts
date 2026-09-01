@@ -553,10 +553,29 @@
 <body>
 
 <div class="pole"></div>
+
+<div id="loginScreen" style="display:flex; min-height:100vh; align-items:center; justify-content:center; padding:24px;">
+  <div style="width:100%; max-width:360px; background:linear-gradient(165deg, var(--card) 0%, var(--card-2) 100%); border:1px solid var(--line); border-radius:14px; padding:28px 24px;">
+    <div style="text-align:center; margin-bottom:20px;">
+      <div style="font-size:36px; margin-bottom:6px;">💈</div>
+      <h1 style="margin:0;">B.Cuts Barbershop</h1>
+      <p style="margin:6px 0 0; font-size:13px; color:var(--muted);">Masuk buat akses kasir</p>
+    </div>
+    <label for="loginEmail">Email</label>
+    <input type="text" id="loginEmail" class="field" placeholder="email@contoh.com">
+    <label for="loginPassword">Password</label>
+    <input type="password" id="loginPassword" class="field" placeholder="Password kamu">
+    <div class="err" id="loginErr">Email atau password salah.</div>
+    <button class="cta-btn" id="loginBtn" style="margin-top:16px;">Masuk</button>
+  </div>
+</div>
+
+<div id="appShell" style="display:none;">
 <header>
   <h1>B.Cuts Barbershop</h1>
   <p>Kasir &amp; nota digital — kirim langsung ke WhatsApp pelanggan</p>
 </header>
+
 
 <main>
   <div class="view" id="view-dashboard">
@@ -719,6 +738,12 @@
     <input type="text" id="ewalletInfo" class="field" placeholder="Contoh: DANA 08123456789 a.n. Budi">
   </section>
 
+  <section>
+    <h2>Akun</h2>
+    <p class="hint">Keluar dari akun kasir ini.</p>
+    <button class="send-btn" id="logoutBtn" style="background:linear-gradient(180deg, var(--danger) 0%, #a83232 100%); border-color:#a83232; color:#fff;">Keluar</button>
+  </section>
+
   </div>
 
 
@@ -746,6 +771,7 @@
     <span>Setelan</span>
   </button>
 </nav>
+</div>
 
 
 <script>
@@ -1296,7 +1322,7 @@ document.getElementById("sendWaBtn").addEventListener("click", ()=>{
   if(lastWaUrl) window.open(lastWaUrl, "_blank");
 });
 
-async function init(){
+async function initApp(){
   renderServiceList();
   renderPickList();
   renderCart();
@@ -1307,7 +1333,69 @@ async function init(){
   const todayIso = new Date().toISOString().slice(0,10);
   document.getElementById("txDate").value = todayIso;
 }
-init();
+
+let appStarted = false;
+
+function showApp(){
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("appShell").style.display = "block";
+  if(!appStarted){
+    appStarted = true;
+    initApp();
+  }
+}
+
+function showLogin(){
+  document.getElementById("loginScreen").style.display = "flex";
+  document.getElementById("appShell").style.display = "none";
+}
+
+async function checkAuth(){
+  const { data } = await sb.auth.getSession();
+  if(data.session){
+    showApp();
+  } else {
+    showLogin();
+  }
+}
+
+document.getElementById("loginBtn").addEventListener("click", async ()=>{
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  const loginErr = document.getElementById("loginErr");
+  const loginBtn = document.getElementById("loginBtn");
+  loginErr.classList.remove("show");
+
+  if(!email || !password){
+    loginErr.textContent = "Email dan password wajib diisi.";
+    loginErr.classList.add("show");
+    return;
+  }
+
+  loginBtn.disabled = true;
+  loginBtn.textContent = "Memeriksa...";
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  loginBtn.disabled = false;
+  loginBtn.textContent = "Masuk";
+
+  if(error){
+    loginErr.textContent = "Email atau password salah.";
+    loginErr.classList.add("show");
+    return;
+  }
+  showApp();
+});
+
+document.getElementById("loginPassword").addEventListener("keydown", e=>{
+  if(e.key === "Enter") document.getElementById("loginBtn").click();
+});
+
+document.getElementById("logoutBtn").addEventListener("click", async ()=>{
+  await sb.auth.signOut();
+  showLogin();
+});
+
+checkAuth();
 </script>
 
 </body>
