@@ -549,6 +549,31 @@
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+#loginScreen label,
+#loginScreen input,
+#loginScreen button {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#loginScreen label {
+  width: min(100%, 300px);
+  text-align: left;
+}
+
+#loginScreen input {
+  width: min(100%, 300px);
+  box-sizing: border-box;
+}
+
+#loginScreen button {
+  width: min(100%, 300px);
+}
+</style>
+
 </head>
 <body>
 
@@ -561,10 +586,8 @@
       <h1 style="margin:0;">B.Cuts Barbershop</h1>
       <p style="margin:6px 0 0; font-size:13px; color:var(--muted);">Masuk buat akses kasir</p>
     </div>
-    <label for="loginEmail">Email</label>
-    <input type="text" id="loginEmail" class="field" placeholder="email@contoh.com">
     <label for="loginPassword">Password</label>
-    <input type="password" id="loginPassword" class="field" placeholder="Password kamu">
+    <input type="password" id="loginPassword" class="field" placeholder="Masukkan password">
     <div class="err" id="loginErr">Email atau password salah.</div>
     <button class="cta-btn" id="loginBtn" style="margin-top:16px;">Masuk</button>
   </div>
@@ -1360,14 +1383,16 @@ async function checkAuth(){
 }
 
 document.getElementById("loginBtn").addEventListener("click", async ()=>{
-  const email = document.getElementById("loginEmail").value.trim();
+  // Email login disimpan di kode agar pengguna cukup memasukkan password.
+  // Catatan: email ini tetap dapat terlihat oleh orang yang memeriksa source website.
+  const email = "dimscoding@gmail.com";
   const password = document.getElementById("loginPassword").value;
   const loginErr = document.getElementById("loginErr");
   const loginBtn = document.getElementById("loginBtn");
   loginErr.classList.remove("show");
 
-  if(!email || !password){
-    loginErr.textContent = "Email dan password wajib diisi.";
+  if(!password){
+    loginErr.textContent = "Password wajib diisi.";
     loginErr.classList.add("show");
     return;
   }
