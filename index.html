@@ -549,31 +549,6 @@
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<style>
-#loginScreen label,
-#loginScreen input,
-#loginScreen button {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-#loginScreen label {
-  width: min(100%, 300px);
-  text-align: left;
-}
-
-#loginScreen input {
-  width: min(100%, 300px);
-  box-sizing: border-box;
-}
-
-#loginScreen button {
-  width: min(100%, 300px);
-}
-</style>
-
 </head>
 <body>
 
@@ -586,9 +561,9 @@
       <h1 style="margin:0;">B.Cuts Barbershop</h1>
       <p style="margin:6px 0 0; font-size:13px; color:var(--muted);">Masuk buat akses kasir</p>
     </div>
-    <label for="loginPassword">Password</label>
-    <input type="password" id="loginPassword" class="field" placeholder="Masukkan password">
-    <div class="err" id="loginErr">Email atau password salah.</div>
+    <label for="loginPin">Masukin PIN 6 digit</label>
+    <input type="password" id="loginPin" class="field" placeholder="••••••" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="off" style="letter-spacing:10px; font-size:22px; text-align:center;">
+    <div class="err" id="loginErr">PIN salah, coba lagi.</div>
     <button class="cta-btn" id="loginBtn" style="margin-top:16px;">Masuk</button>
   </div>
 </div>
@@ -1382,36 +1357,36 @@ async function checkAuth(){
   }
 }
 
+const OWNER_EMAIL = "dimscoding@gmail.com";
+
 document.getElementById("loginBtn").addEventListener("click", async ()=>{
-  // Email login disimpan di kode agar pengguna cukup memasukkan password.
-  // Catatan: email ini tetap dapat terlihat oleh orang yang memeriksa source website.
-  const email = "dimscoding@gmail.com";
-  const password = document.getElementById("loginPassword").value;
+  const pin = document.getElementById("loginPin").value.trim();
   const loginErr = document.getElementById("loginErr");
   const loginBtn = document.getElementById("loginBtn");
   loginErr.classList.remove("show");
 
-  if(!password){
-    loginErr.textContent = "Password wajib diisi.";
+  if(!/^[0-9]{6}$/.test(pin)){
+    loginErr.textContent = "PIN harus 6 angka.";
     loginErr.classList.add("show");
     return;
   }
 
   loginBtn.disabled = true;
   loginBtn.textContent = "Memeriksa...";
-  const { error } = await sb.auth.signInWithPassword({ email, password });
+  const { error } = await sb.auth.signInWithPassword({ email: OWNER_EMAIL, password: pin });
   loginBtn.disabled = false;
   loginBtn.textContent = "Masuk";
 
   if(error){
-    loginErr.textContent = "Email atau password salah.";
+    loginErr.textContent = "PIN salah, coba lagi.";
     loginErr.classList.add("show");
+    document.getElementById("loginPin").value = "";
     return;
   }
   showApp();
 });
 
-document.getElementById("loginPassword").addEventListener("keydown", e=>{
+document.getElementById("loginPin").addEventListener("keydown", e=>{
   if(e.key === "Enter") document.getElementById("loginBtn").click();
 });
 
