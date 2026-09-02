@@ -676,7 +676,7 @@
       <div style="text-align:center; font-size:12px; color:#7a7266; margin-top:16px;">Terima kasih sudah berkunjung!</div>
     </div>
     <button class="add-service-btn" id="downloadReceiptBtn" style="margin-top:12px;">Download struk sebagai gambar</button>
-    <button class="send-btn" id="sendWaBtn" style="margin-top:10px;">Kirim nota ke WhatsApp</button>
+    <button class="send-btn" id="sendWaBtn" style="margin-top:10px;">Download &amp; kirim PNG ke WhatsApp</button>
   </section>
 
   </div>
@@ -684,7 +684,7 @@
   <div class="view" id="view-riwayat" style="display:none;">
   <section>
     <h2>Riwayat &amp; laporan bulanan</h2>
-    <p class="hint">Semua transaksi yang disimpan otomatis masuk ke sini, dikelompokkan per bulan.</p>
+    <p class="hint">Semua transaksi yang disimpan otomatis masuk ke sini. Januari–Desember tetap bisa dipilih meskipun belum ada transaksi.</p>
     <label for="monthPicker">Pilih bulan</label>
     <select id="monthPicker" class="field"></select>
     <div style="display:flex; gap:10px; margin-top:12px;">
@@ -1017,12 +1017,26 @@ function monthLabel(key){
 
 function populateMonthPicker(){
   const picker = document.getElementById("monthPicker");
-  const keys = Array.from(new Set(transactions.map(t=>monthKey(t.date)))).sort().reverse();
   const currentKey = monthKey(new Date().toISOString());
-  if(keys.length===0) keys.push(currentKey);
   const prevValue = picker.value;
-  picker.innerHTML = keys.map(k=>`<option value="${k}">${monthLabel(k)}</option>`).join("");
-  picker.value = keys.includes(prevValue) ? prevValue : keys[0];
+  const currentYear = Number(currentKey.slice(0,4));
+  const years = Array.from(new Set([
+    currentYear,
+    ...transactions.map(t=>Number(monthKey(t.date).slice(0,4)))
+  ])).filter(Number.isFinite).sort((a,b)=>b-a);
+
+  const keys = [];
+  picker.innerHTML = years.map(year=>{
+    const options = [];
+    for(let month=1; month<=12; month++){
+      const key = `${year}-${String(month).padStart(2,"0")}`;
+      keys.push(key);
+      options.push(`<option value="${key}">${monthLabel(key)}</option>`);
+    }
+    return `<optgroup label="${year}">${options.join("")}</optgroup>`;
+  }).join("");
+
+  picker.value = keys.includes(prevValue) ? prevValue : currentKey;
 }
 
 function renderHistory(){
@@ -1172,14 +1186,47 @@ function renderReceipt(record){
   document.getElementById("receiptSection").style.display = "block";
 }
 
-document.getElementById("downloadReceiptBtn").addEventListener("click", ()=>{
+async function createReceiptPngBlob(){
   const card = document.getElementById("receiptCard");
-  html2canvas(card, {scale:2, backgroundColor:"#fdfbf6"}).then(canvas=>{
-    const link = document.createElement("a");
-    link.download = "struk-bcuts-" + Date.now() + ".png";
-    link.href = canvas.toDataURL("image/png");
-    link.click();
+  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+  const canvas = await html2canvas(card, {
+    scale:2,
+    backgroundColor:"#fdfbf6",
+    useCORS:true
   });
+  return new Promise((resolve, reject)=>{
+    canvas.toBlob(blob=>{
+      if(blob) resolve(blob);
+      else reject(new Error("PNG struk gagal dibuat."));
+    }, "image/png");
+  });
+}
+
+function receiptFileName(){
+  const orderId = (lastReceiptRecord && lastReceiptRecord.orderId) || Date.now();
+  const safeId = String(orderId).replace(/[^a-z0-9_-]/gi, "-");
+  return `struk-bcuts-${safeId}.png`;
+}
+
+function downloadReceiptBlob(blob, fileName){
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.download = fileName;
+  link.href = url;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(()=>URL.revokeObjectURL(url), 1500);
+}
+
+document.getElementById("downloadReceiptBtn").addEventListener("click", async ()=>{
+  try{
+    const blob = await createReceiptPngBlob();
+    downloadReceiptBlob(blob, receiptFileName());
+  }catch(e){
+    console.error(e);
+    alert("Gagal membuat gambar struk, coba lagi.");
+  }
 });
 
 function exportToExcel(){
@@ -1216,6 +1263,64 @@ function exportToExcel(){
 document.getElementById("exportBtn").addEventListener("click", exportToExcel);
 
 let lastWaUrl = null;
+let lastWaMessage = "";
+let lastReceiptRecord = null;
+
+function openWhatsAppTextFallback(){
+  if(!lastWaUrl) return;
+  const opened = window.open(lastWaUrl, "_blank");
+  if(!opened) window.location.href = lastWaUrl;
+}
+
+async function shareReceiptToWhatsApp(){
+  if(!lastReceiptRecord || !lastWaUrl){
+    alert("Buat dan simpan transaksi terlebih dahulu.");
+    return;
+  }
+
+  const shareBtn = document.getElementById("sendWaBtn");
+  const originalText = shareBtn.textContent;
+  shareBtn.disabled = true;
+  shareBtn.textContent = "Membuat PNG...";
+
+  try{
+    const blob = await createReceiptPngBlob();
+    const fileName = receiptFileName();
+    const file = new File([blob], fileName, {type:"image/png"});
+
+    // Simpan salinan PNG otomatis setiap kali nota dikirim.
+    downloadReceiptBlob(blob, fileName);
+
+    const canShareFile = typeof navigator.share === "function" &&
+      (typeof navigator.canShare !== "function" || navigator.canShare({files:[file]}));
+
+    if(canShareFile){
+      shareBtn.textContent = "Pilih WhatsApp...";
+      try{
+        await navigator.share({
+          title:`Struk B.Cuts - ${lastReceiptRecord.customer}`,
+          text:lastWaMessage,
+          files:[file]
+        });
+      }catch(shareError){
+        if(shareError && shareError.name === "AbortError") return;
+        console.warn("Berbagi file tidak didukung penuh:", shareError);
+        openWhatsAppTextFallback();
+        alert("PNG struk sudah otomatis di-download. Silakan lampirkan file tersebut pada chat WhatsApp yang terbuka.");
+      }
+    }else{
+      openWhatsAppTextFallback();
+      alert("PNG struk sudah otomatis di-download. Browser ini belum mendukung lampiran langsung, jadi silakan lampirkan PNG pada chat WhatsApp yang terbuka.");
+    }
+  }catch(e){
+    console.error(e);
+    alert("Gagal membuat PNG struk. WhatsApp akan dibuka dengan nota teks.");
+    openWhatsAppTextFallback();
+  }finally{
+    shareBtn.disabled = false;
+    shareBtn.textContent = originalText;
+  }
+}
 
 document.getElementById("sendBtn").addEventListener("click", async ()=>{
   const nameEl = document.getElementById("custName");
@@ -1301,7 +1406,7 @@ document.getElementById("sendBtn").addEventListener("click", async ()=>{
     document.getElementById("txDate").value = new Date().toISOString().slice(0,10);
 
     const orderId = "BC" + txDateTime.toISOString().slice(2,10).replace(/-/g,"") + "-" + String(transactions.length).padStart(3,"0");
-    renderReceipt({
+    const receiptRecord = {
       orderId: orderId,
       customer: name,
       date: data.tanggal,
@@ -1309,11 +1414,14 @@ document.getElementById("sendBtn").addEventListener("click", async ()=>{
       total: total,
       payment: paymentMethod,
       status: statusValue
-    });
+    };
+    renderReceipt(receiptRecord);
 
     const url = `https://wa.me/${normalized}?text=${encodeURIComponent(msg)}`;
     lastWaUrl = url;
-    window.open(url, "_blank");
+    lastWaMessage = msg;
+    lastReceiptRecord = receiptRecord;
+    await shareReceiptToWhatsApp();
   }catch(e){
     console.error(e);
     saveErr.classList.add("show");
@@ -1322,9 +1430,7 @@ document.getElementById("sendBtn").addEventListener("click", async ()=>{
   }
 });
 
-document.getElementById("sendWaBtn").addEventListener("click", ()=>{
-  if(lastWaUrl) window.open(lastWaUrl, "_blank");
-});
+document.getElementById("sendWaBtn").addEventListener("click", shareReceiptToWhatsApp);
 
 async function initApp(){
   renderServiceList();
