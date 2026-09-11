@@ -47,7 +47,6 @@ export function TransactionPage({
   const [receipt, setReceipt] = useState<ReceiptRecord | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [phoneError, setPhoneError] = useState('')
-  const [sharing, setSharing] = useState(false)
   const receiptRef = useRef<HTMLDivElement>(null)
   const lastShare = useRef<SharePayload | null>(null)
 
@@ -78,48 +77,11 @@ export function TransactionPage({
 
   const openWhatsApp = (phone: string, message: string) => {
     const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
-    const opened = window.open(url, '_blank')
-    if (opened) opened.opener = null
-    else window.location.href = url
+    window.location.href = url
   }
 
-  const shareReceipt = async (payload: SharePayload) => {
-    setSharing(true)
-    try {
-      const blob = await createReceiptBlob()
-      const fileName = `struk-bcuts-${payload.receipt.orderId}.png`
-      const file = new File([blob], fileName, { type: 'image/png' })
-      downloadBlob(blob, fileName)
-
-      let canShareFile = false
-      try {
-        canShareFile = typeof navigator.share === 'function' &&
-          (typeof navigator.canShare !== 'function' || navigator.canShare({ files: [file] }))
-      } catch {
-        canShareFile = false
-      }
-
-      if (canShareFile) {
-        try {
-          await navigator.share({
-            title: `Struk B.Cuts - ${payload.receipt.customer}`,
-            text: payload.message,
-            files: [file],
-          })
-          return
-        } catch (error) {
-          if (error instanceof DOMException && error.name === 'AbortError') return
-        }
-      }
-
-      openWhatsApp(payload.phone, payload.message)
-      onNotify('PNG sudah di-download. Lampirkan pada chat WhatsApp yang terbuka.', 'info')
-    } catch (error) {
-      openWhatsApp(payload.phone, payload.message)
-      onNotify(error instanceof Error ? `${error.message} Nota teks tetap dibuka.` : 'Gagal membuat PNG. Nota teks tetap dibuka.', 'error')
-    } finally {
-      setSharing(false)
-    }
+  const sendTextReceipt = (payload: SharePayload) => {
+    openWhatsApp(payload.phone, payload.message)
   }
 
   const buildMessage = (record: ReceiptRecord): string => {
@@ -190,7 +152,7 @@ export function TransactionPage({
       lastShare.current = payload
       flushSync(() => setReceipt(nextReceipt))
       onNotify('Transaksi berhasil disimpan.', 'success')
-      await shareReceipt(payload)
+      sendTextReceipt(payload)
       onDraftChange({ customer: '', phone: '', paidNow: false, selectedIds: new Set<number>() })
     } catch (error) {
       onNotify(error instanceof Error ? error.message : 'Gagal menyimpan transaksi.', 'error')
@@ -259,7 +221,7 @@ export function TransactionPage({
             <div className="summary-total"><span>Total</span><strong>{formatRupiah(total)}</strong></div>
             <div className="summary-meta"><span>{draft.payment}</span><span className={`status-pill ${draft.paidNow ? 'paid' : 'pending'}`}>{draft.paidNow ? 'Lunas' : 'Menunggu bayar'}</span></div>
             <button className="primary-button full-button" disabled={submitting || chosen.length === 0} type="submit">{submitting ? <span className="button-loader" /> : <Icon name="whatsapp" size={19} />}{submitting ? 'Menyimpan...' : 'Simpan & kirim nota'}</button>
-            <small className="summary-note">PNG struk dibuat dan di-download otomatis.</small>
+            <small className="summary-note">Setelah tersimpan, chat WhatsApp pelanggan langsung terbuka dengan teks nota siap dikirim.</small>
           </section>
         </aside>
       </form>
@@ -278,8 +240,8 @@ export function TransactionPage({
             <p className="receipt-thanks">Terima kasih sudah berkunjung.<br />Sampai jumpa di potongan berikutnya!</p>
           </div>
           <div className="receipt-actions">
-            <button className="secondary-button" disabled={sharing} onClick={async () => { try { const blob = await createReceiptBlob(); downloadBlob(blob, `struk-bcuts-${receipt.orderId}.png`) } catch { onNotify('Gagal membuat PNG.', 'error') } }} type="button"><Icon name="download" size={18} /> Download PNG</button>
-            <button className="primary-button" disabled={sharing || !lastShare.current} onClick={() => lastShare.current && shareReceipt(lastShare.current)} type="button"><Icon name="whatsapp" size={18} /> {sharing ? 'Menyiapkan...' : 'Kirim ulang'}</button>
+            <button className="secondary-button" onClick={async () => { try { const blob = await createReceiptBlob(); downloadBlob(blob, `struk-bcuts-${receipt.orderId}.png`) } catch { onNotify('Gagal membuat PNG.', 'error') } }} type="button"><Icon name="download" size={18} /> Download PNG</button>
+            <button className="primary-button" disabled={!lastShare.current} onClick={() => lastShare.current && sendTextReceipt(lastShare.current)} type="button"><Icon name="whatsapp" size={18} /> Kirim ulang ke WhatsApp</button>
           </div>
         </section>
       ) : null}
