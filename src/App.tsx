@@ -1,14 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import logoUrl from './assets/logo-bcuts.png?url'
 import { BottomNav } from './components/BottomNav'
 import { Dashboard } from './components/Dashboard'
 import { HistoryPage } from './components/HistoryPage'
 import { Icon } from './components/Icon'
-import { LoginScreen } from './components/LoginScreen'
 import { ServicesPage } from './components/ServicesPage'
 import { SettingsPage } from './components/SettingsPage'
 import { TransactionPage } from './components/TransactionPage'
-import { config } from './lib/config'
 import { supabase } from './lib/supabase'
 import {
   DEFAULT_PAYMENT_SETTINGS,
@@ -33,10 +30,7 @@ import type {
   ViewName,
 } from './types'
 
-type AuthState = 'checking' | 'signedOut' | 'signedIn'
-
 export default function App() {
-  const [authState, setAuthState] = useState<AuthState>('checking')
   const [activeView, setActiveView] = useState<ViewName>('dashboard')
   const [transactions, setTransactions] = useState<TransactionRecord[]>([])
   const [loadingTransactions, setLoadingTransactions] = useState(false)
@@ -75,46 +69,11 @@ export default function App() {
   }, [notify])
 
   useEffect(() => {
-    if (!config.isConfigured) {
-      setAuthState('signedOut')
-      return
-    }
-
-    let mounted = true
-    void supabase.auth.getSession().then(({ data }) => {
-      if (mounted) setAuthState(data.session ? 'signedIn' : 'signedOut')
-    })
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (mounted) setAuthState(session ? 'signedIn' : 'signedOut')
-    })
+    void loadTransactions()
     return () => {
-      mounted = false
-      listener.subscription.unsubscribe()
       if (toastTimer.current) window.clearTimeout(toastTimer.current)
     }
-  }, [])
-
-  useEffect(() => {
-    if (authState === 'signedIn') void loadTransactions()
-  }, [authState, loadTransactions])
-
-  const login = async (pin: string) => {
-    if (!config.isConfigured) throw new Error('Konfigurasi server belum tersedia.')
-    const { error } = await supabase.auth.signInWithPassword({ email: config.ownerEmail, password: pin })
-    if (error) throw error
-    setAuthState('signedIn')
-  }
-
-  const logout = async () => {
-    const { error } = await supabase.auth.signOut()
-    if (error) {
-      notify(`Gagal keluar: ${error.message}`, 'error')
-      return
-    }
-    setTransactions([])
-    setActiveView('dashboard')
-    setAuthState('signedOut')
-  }
+  }, [loadTransactions])
 
   const saveTransaction = async (input: CreateTransactionInput): Promise<TransactionRecord> => {
     const dbRow = {
@@ -174,18 +133,6 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  if (authState === 'checking') {
-    return (
-      <main className="app-loader">
-        <div className="brand-mark brand-mark-large"><img alt="Logo B.Cuts" src={logoUrl} /></div>
-        <span className="loader-line" />
-        <p>Menyiapkan kasir B.Cuts...</p>
-      </main>
-    )
-  }
-
-  if (authState === 'signedOut') return <LoginScreen configurationReady={config.isConfigured} onLogin={login} />
-
   return (
     <div className="app-shell">
       <div className="barber-pole" />
@@ -202,7 +149,7 @@ export default function App() {
         {activeView === 'transaksi' ? <TransactionPage draft={draft} onDraftChange={(patch) => setDraft((current) => ({ ...current, ...patch }))} onNavigate={navigate} onNotify={notify} onSave={saveTransaction} paymentSettings={paymentSettings} services={services} shopSettings={shopSettings} /> : null}
         {activeView === 'riwayat' ? <HistoryPage loading={loadingTransactions} onDelete={deleteTransaction} onMarkPaid={markPaid} transactions={transactions} /> : null}
         {activeView === 'layanan' ? <ServicesPage onChange={updateServices} services={services} /> : null}
-        {activeView === 'pengaturan' ? <SettingsPage onLogout={logout} onNotify={notify} onPaymentChange={updatePaymentSettings} onShopChange={updateShopSettings} payment={paymentSettings} shop={shopSettings} /> : null}
+        {activeView === 'pengaturan' ? <SettingsPage onNotify={notify} onPaymentChange={updatePaymentSettings} onShopChange={updateShopSettings} payment={paymentSettings} shop={shopSettings} /> : null}
       </main>
 
       <BottomNav activeView={activeView} onChange={navigate} />
