@@ -7,7 +7,6 @@ interface SettingsPageProps {
   shop: ShopSettings
   onPaymentChange: (settings: PaymentSettings) => void
   onShopChange: (settings: ShopSettings) => void
-  onLogout: () => Promise<void>
   onNotify: (message: string, kind?: 'success' | 'error' | 'info') => void
 }
 
@@ -45,7 +44,7 @@ async function compressImage(file: File): Promise<string> {
   })
 }
 
-export function SettingsPage({ payment, shop, onPaymentChange, onShopChange, onLogout, onNotify }: SettingsPageProps) {
+export function SettingsPage({ payment, shop, onPaymentChange, onShopChange, onNotify }: SettingsPageProps) {
   const fileRef = useRef<HTMLInputElement>(null)
 
   const handleQris = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -94,10 +93,6 @@ export function SettingsPage({ payment, shop, onPaymentChange, onShopChange, onL
           {payment.qrisImage ? <button className="secondary-button full-button" onClick={() => fileRef.current?.click()} type="button"><Icon name="edit" size={17} /> Ganti gambar QRIS</button> : null}
         </section>
 
-        <section className="content-card settings-card account-card">
-          <div className="card-title-icon"><span><Icon name="settings" /></span><div><h3>Akun kasir</h3><p>Keluar dari sesi kasir pada perangkat ini.</p></div></div>
-          <button className="danger-button full-button" onClick={onLogout} type="button"><Icon name="logout" size={18} /> Keluar dari akun</button>
-        </section>
       </div>
     </div>
   )
