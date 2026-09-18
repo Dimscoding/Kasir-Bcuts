@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import logoUrl from './assets/logo-bcuts.png?url'
 import { BottomNav } from './components/BottomNav'
 import { Dashboard } from './components/Dashboard'
 import { HistoryPage } from './components/HistoryPage'
